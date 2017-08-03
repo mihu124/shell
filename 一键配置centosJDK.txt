@@ -1,0 +1,54 @@
+#!/bin/bash
+
+
+function insallJDK(){
+		javaPATH="/usr/javaJDK";
+		files=`ls $javaPATH`;
+		cd $javaPATH
+	echo "下载JDK，务必保证网址正确"
+	echo -e "请输入回车后继续"
+	read -n1
+	echo -e "请输入要下载的网址，到download.oracle.com/otn-pub/java/jdk里面获取下载链接"
+	echo -e "例如:http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.tar.gz"
+	echo -e "只能配置tar.gz结尾的，不要使用rpm"
+	echo -n -e "请输入你的网址："
+	read  wz 
+	wget $wz?AuthParam=1494493322_05eef3e23a171fe0b4ca4e6038302e6a
+	echo "解压JDK"
+	ls $javaPATH > /home/jdk
+	name=`cat /home/jdk`;
+	tar -zxvf $name
+		dir=$(ls -l $javaPATH/ |awk '/^d/ {print $NF}')
+					for i in $dir
+					do
+					javaml=$i
+	echo "备份profilem,如果配置失败，请将home里面的profile移动到etc里面"
+	cp /etc/profile /home
+	echo '
+export JAVA_HOME='$javaPATH/$javaml>>/etc/profile
+echo 'export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+export PATH=$JAVA_HOME/bin:$PATH' >>/etc/profile
+				done   
+		
+	echo "配置环境变量完成，生效中"
+	source /etc/profile
+	java -version
+return 1
+}
+clear #清空屏幕
+	echo -e "--您正在使用成成一键配置JDK脚本---"
+	echo -e "--脚本中有不足的地方请指出来谢谢----"
+	echo -e "请输入回车后确认执行"
+	read -n1
+	clear 
+
+	if [ -d "/usr/javaJDK" ];then
+		echo "有文件目录直接开始下载"
+		insallJDK
+	else
+		echo -e "没有文件目录，开始创建目录"
+		mkdir /usr/javaJDK
+	insallJDK		s
+exit
+fi
+	exit 0;

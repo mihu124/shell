@@ -1,0 +1,92 @@
+#!/bin/bash
+function insalltomcat(){
+	tomcat="/usr/tomcat"
+		cd $tomcat
+	echo "下载tomcat，默认7.0"
+	echo -e "请输入回车后继续"
+	read -n1
+	wget  http://apache.fayea.com/tomcat/tomcat-7/v7.0.78/bin/apache-tomcat-7.0.78.tar.gz
+	echo "解压tomcat"
+	ls /usr/tomcat/ > /home/t
+	name=`cat /home/t`;
+	tar -zxvf $name
+		dir=$(ls -l $tomcat/ |awk '/^d/ {print $NF}')
+					for i in $dir
+					do
+					tomcatml=$i
+	echo "备份profilem,如果配置失败，请将home里面的profile移动到etc里面"
+	cp /etc/profile /home
+	echo '
+	export TOMCAT_HOME='$tomcat/$tomcatml  >>/etc/profile
+	echo 'export CATALINA_HOME='$tomcat/$tomcatml >>/etc/profile
+	echo 'export PATH=$PATH:$JAVA_HOME/bin:$TOMCAT_HOME/bin' >>/etc/profile
+				done   
+	echo "配置profile完成，生效中"
+	source /etc/profile
+	startup.sh
+	source /etc/profile
+	echo -e "安装完成"
+return 1
+}
+function ml(){
+	
+	clear 
+	if [ -d "/usr/tomcat" ];then
+		echo "有文件目录直接开始下载"
+		insalltomcat
+	else
+		echo -e "没有文件目录，开始创建目录"
+		mkdir /usr/tomcat
+		insalltomcat		
+
+	exit
+	fi
+	return 1
+}
+
+function readytoinstall() {
+	echo "正在配置网络环境..."
+	echo "配置网络环境..."
+	iptables -F
+	service iptables save
+	service iptables restart
+	iptables -t nat -A POSTROUTING -s 10.8.0.0/16 -o eth0 -j MASQUERADE
+	#iptables -A INPUT -p TCP --dport 80 -j ACCEPT
+	iptables -A INPUT -p TCP --dport 8080 -j ACCEPT
+	iptables -A INPUT -p TCP --dport 88 -j ACCEPT
+	iptables -A INPUT -p TCP --dport 22 -j ACCEPT
+	iptables -t nat -A POSTROUTING -j MASQUERADE
+	iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+	service iptables save
+	service iptables restart
+	chkconfig iptables on
+	setenforce 0
+	sleep 3
+	echo "配置完成"
+	sleep 1
+	ml
+
+	return 1
+}
+
+	
+
+clear #清空屏幕
+	echo -e "--您正在使用成成写的一键配置tomcat脚本---"
+	echo -e "--脚本中有不足的地方请指出来谢谢----"
+	echo -e "请输入回车后确认执行"
+	read -n1
+	echo -n -e "确认安装开启防火墙（默认8080）[y/n]"
+    read PASSWD
+    readkey=$PASSWD
+    if [[ ${readkey%%\ *} == y ]]
+    then
+		readytoinstall
+		sleep 1
+    else
+		ml
+	exit
+	fi
+
+
+	exit 0;
